@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
-const BookmarkModel = new mongoose.schem(
+const BookmarkModel = new mongoose.Schema(
   {
+    title: { type: String, required: true },
     job: { type: String, required: true },
     userId: { type: String, required: true },
-    title: { type: String, required: true },
     imageUrl: { type: String, required: true },
     company: { type: String, required: true },
     location: { type: String, required: true },
@@ -13,3 +13,4 @@ const BookmarkModel = new mongoose.schem(
 );
 
 export default mongoose.model("Bookmark", BookmarkModel);
+
