@@ -37,14 +37,16 @@ class AuthMiddleware {
     });
   }
 
-  static requireAdminRole(req, res, next) {
-    if (req.user && req.user.role === "admin") {
-      next();
-    } else {
-      return res.status(403).json({
-        message: "Access denied. Admin role required.",
-      });
-    }
+  static verifyTokenAndAdmin(req, res, next) {
+    AuthMiddleware.verifyToken(req, res, () => {
+      if (req.user.isAdmin) {
+        next();
+      } else {
+        return res.status(403).json({
+          message: "Access denied. Admin role required.",
+        });
+      }
+    });
   }
 }
 
