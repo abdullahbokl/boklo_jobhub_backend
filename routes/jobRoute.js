@@ -18,16 +18,12 @@ router.delete(
 );
 
 // get a job
-router.get("/:id", AuthMiddleware.verifyTokenAndAdmin, JobController.getJob);
+router.get("/:id", JobController.getJob);
 
 // get all jobs
-router.get("/", AuthMiddleware.verifyTokenAndAdmin, JobController.getAllJobs);
+router.get("/", JobController.getAllJobs);
 
 // search job
-router.get(
-  "/search/:query",
-  AuthMiddleware.verifyToken,
-  JobController.searchJobs
-);
+router.get("/search/:query", JobController.searchJobs);
 
 export default router;
