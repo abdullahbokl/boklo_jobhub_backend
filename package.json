@@ -2,15 +2,16 @@
   "name": "jobhub_backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/app.js",
   "type": "module",
   "scripts": {
-    "start": "index.js"
+    "start": "nodemon src/config/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "crypto-js": "^4.1.1",
     "dotenv": "^16.0.3",
@@ -19,6 +20,7 @@
     "mongoose": "^7.0.4",
     "morgan": "^1.10.0",
     "nodemon": "^3.0.1",
-    "socket.io": "^4.6.1"
+    "socket.io": "^4.6.1",
+    "validator": "^13.11.0"
   }
 }
