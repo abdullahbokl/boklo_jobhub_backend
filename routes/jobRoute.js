@@ -4,26 +4,86 @@ import { Router } from "express";
 
 const router = Router();
 
-// create job
+/**
+ * @swagger
+ * /api/jobs:
+ * post:
+ * description: Use to create a job
+ * responses:
+ * '200':
+ * description: A successful response
+ *
+ **/
+
 router.post("/", AuthMiddleware.verifyTokenAndAdmin, JobController.createJob);
 
-// update job
+/**
+ * @swagger
+ * /api/jobs/{id}:
+ * get:
+ * description: Use to request a job
+ * responses:
+ * '200':
+ * description: A successful response
+ *
+ **/
+
 router.put("/:id", AuthMiddleware.verifyTokenAndAdmin, JobController.updateJob);
 
-// delete job
+/**
+ * @swagger
+ * /api/jobs/{id}:
+ * delete:
+ * description: Use to delete a job
+ * responses:
+ * '200':
+ * description: A successful response
+ *
+ **/
+
 router.delete(
   "/:id",
   AuthMiddleware.verifyTokenAndAdmin,
   JobController.deleteJob
 );
 
-// get a job
+/**
+ * @swagger
+ * /api/jobs/{id}:
+ * get:
+ * description: Use to request a job
+ * responses:
+ * '200':
+ * description: A successful response
+ *
+ **/
+
 router.get("/:id", JobController.getJob);
 
-// get all jobs
+/**
+ * @swagger
+ * /api/jobs:
+ * get:
+ * description: Use to request all jobs
+ * responses:
+ * '200':
+ * description: A successful response
+ *
+ **/
+
 router.get("/", JobController.getAllJobs);
 
-// search job
+/**
+ * @swagger
+ * /api/jobs/search/{query}:
+ * get:
+ * description: Use to search for jobs
+ * responses:
+ * '200':
+ * description: A successful response
+ *
+ **/
+
 router.get("/search/:query", JobController.searchJobs);
 
 export default router;

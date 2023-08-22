@@ -3,10 +3,29 @@ import AuthMiddleware from "../middleware/verifyToken.js";
 import { Router } from "express";
 const router = Router();
 
-// CREATE BOOKMARKS
+/**
+ * @swagger
+ * /api/bookmarks:
+ * post:
+ * description: Use to create a bookmark
+ * responses:
+ * '200':
+ * description: A successful response
+ *
+ **/
+
 router.post("/", bookmarkController.createBookmark);
 
-// DELETE BOOKMARKS
+/**
+ * @swagger
+ * /api/bookmarks/{id}:
+ * delete:
+ * description: Use to delete a bookmark
+ * responses:
+ * '200':
+ * description: A successful response
+ *
+ **/
 
 router.delete(
   "/:id",
@@ -14,7 +33,17 @@ router.delete(
   bookmarkController.deleteBookmark
 );
 
-// GET BOOKMARKS
+/**
+ * @swagger
+ * /api/bookmarks/{userId}:
+ * get:
+ * description: Use to request all bookmarks
+ * responses:
+ * '200':
+ * description: A successful response
+ *
+ **/
+
 router.get("/:userId", bookmarkController.getBookmarks);
 
 export default router;

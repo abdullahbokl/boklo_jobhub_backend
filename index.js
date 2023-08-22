@@ -1,4 +1,5 @@
 import express from "express";
+import morgan from "morgan";
 import dotenv from "dotenv";
 
 import startServer from "./server.js";
@@ -12,6 +13,7 @@ dotenv.config();
 
 // Middlewares
 app.use(express.json());
+app.use(morgan("dev"));
 
 // Routes
 app.use("/api", authRoute);
