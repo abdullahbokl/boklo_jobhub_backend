@@ -1,7 +1,6 @@
 import UserController from "../controllers/userController.js";
 import AuthMiddleware from "../middleware/AuthMiddleware.js";
 import { Router } from "express";
-import InputValidationMiddleware from "../middleware/InputValidationMiddleware.js";
 
 const router = Router();
 
@@ -40,16 +39,12 @@ const router = Router();
  *
  * */
 
-router
-  .route("/:id")
-  .get(UserController.getUser)
-  .put(
-    AuthMiddleware.verifyAndAuthorization,
-    InputValidationMiddleware.validateRegisterInput,
-    UserController.updateUser
-  )
-  .delete(AuthMiddleware.verifyAndAuthorization, UserController.deleteUser);
+router.route("/:id").get(UserController.getUser);
 
-router.route("/").get(UserController.getAllUsers);
+router
+  .route("/")
+  .get(UserController.getAllUsers)
+  .put(AuthMiddleware.verifyToken, UserController.updateUser)
+  .delete(AuthMiddleware.verifyToken, UserController.deleteUser);
 
 export default router;

@@ -16,27 +16,37 @@ const UserModel = new mongoose.Schema({
     required: true,
     minlength: 8,
   },
-  profilePic: {
+  fullName: {
     type: String,
+  },
+  phone: {
+    type: String,
+  },
+  profilePic: {
+    type: [
+      {
+        url: String,
+        uploadedAt: {
+          type: String,
+          default: new Date().toISOString().slice(0, 19).replace("T", " "),
+        },
+      },
+    ],
   },
   location: {
     type: String,
   },
   isAdmin: {
     type: Boolean,
-    default: false,
   },
   isAgent: {
     type: Boolean,
-    default: false,
   },
   skills: {
     type: Array,
-    default: [],
   },
   bio: {
     type: String,
-    default: "",
   },
 });
 

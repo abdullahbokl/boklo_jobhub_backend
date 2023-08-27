@@ -9,7 +9,9 @@ class JobController {
       res.status(200).json(savedJob);
     } catch (error) {
       console.log(error);
-      res.status(500).json(error);
+      res.status(500).json({
+        message: error,
+      });
     }
   }
 
@@ -25,7 +27,10 @@ class JobController {
 
       res.status(200).json(updatedJob);
     } catch (error) {
-      res.status(500).json(error);
+      console.log(error);
+      res.status(500).json({
+        message: error,
+      });
     }
   }
 
@@ -34,7 +39,10 @@ class JobController {
       await JobModel.findByIdAndDelete(req.params.id);
       res.status(200).json("Job has been deleted");
     } catch (error) {
-      res.status(500).json(error);
+      console.log(error);
+      res.status(500).json({
+        message: error,
+      });
     }
   }
 
@@ -44,7 +52,10 @@ class JobController {
 
       res.status(200).json(job);
     } catch (error) {
-      res.status(500).json(error);
+      console.log(error);
+      res.status(500).json({
+        message: error,
+      });
     }
   }
 
@@ -55,6 +66,7 @@ class JobController {
 
       res.status(200).json(jobs);
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   }
@@ -87,7 +99,9 @@ class JobController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(500).json(error);
+      res.status(500).json({
+        message: error,
+      });
     }
   }
 }

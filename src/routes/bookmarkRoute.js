@@ -16,7 +16,7 @@ const router = Router();
 
 router.post(
   "/",
-  AuthMiddleware.verifyAndAuthorization,
+  AuthMiddleware.verifyToken,
   bookmarkController.createBookmark
 );
 
@@ -33,7 +33,7 @@ router.post(
 
 router.delete(
   "/:id",
-  AuthMiddleware.verifyAndAuthorization,
+  AuthMiddleware.verifyToken,
   bookmarkController.deleteBookmark
 );
 
@@ -50,7 +50,7 @@ router.delete(
 
 router.get(
   "/:userId",
-  AuthMiddleware.verifyAndAuthorization,
+  AuthMiddleware.verifyToken,
   bookmarkController.getBookmarks
 );
 

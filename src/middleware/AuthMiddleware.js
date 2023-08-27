@@ -11,31 +11,31 @@ class AuthMiddleware {
     }
 
     const token = authHeader.split(" ")[1];
+    // check id expired
 
     jwt.verify(token, process.env.JWT_SECRET, (error, user) => {
       if (error) {
+        console.error("JWT error:", error);
         return res.status(401).json({
           message: "Token is invalid",
         });
       }
 
-      console.log(user);
       req.user = user;
       next();
     });
   }
 
-  static verifyAndAuthorization(req, res, next) {
-    AuthMiddleware.verifyToken(req, res, () => {
-      if (req.user.id === req.params.id || req.user.isAdmin) {
-        next();
-      } else {
-        return res.status(403).json({
-          message: "Access denied. User id does not match",
-        });
-      }
-    });
-  }
+  // static verifyAndAuthorization(req, res, next) {
+  //   AuthMiddleware.verifyToken(req, res, () => {
+  //     if (req.user.idreq.user.isAdmin) {
+  //     } else {
+  //       return res.status(403).json({
+  //         message: "Access denied. User id does not match",
+  //       });
+  //     }
+  //   });
+  // }
 
   static verifyTokenAndAdmin(req, res, next) {
     AuthMiddleware.verifyToken(req, res, () => {

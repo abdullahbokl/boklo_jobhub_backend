@@ -16,31 +16,28 @@ class RegisterService {
       await user.save();
 
       const { password: omittedPassword, __v, ...userData } = user._doc;
-      return res.status(201).json({
-        message: "User created successfully",
-        user: userData,
-      });
+      return res.status(201).json(userData);
     } catch (error) {
+      console.log(error);
       if (error.code === 11000) {
         const errorMessage = error.keyValue.email
           ? "Email already exists"
           : error.keyValue.userName
           ? "User name already exists"
           : "User already exists";
-
         return res.status(409).json({
           message: errorMessage,
         });
       } else if (error.name === "ValidationError") {
         const errors = Object.values(error.errors).map((err) => err.message);
+        console.log(error);
         return res.status(400).json({
           message: "User creation failed",
-          error: errors,
         });
       } else {
+        console.log(error);
         return res.status(500).json({
-          message: "User creation failed",
-          error: error.message.split(","),
+          message: error,
         });
       }
     }

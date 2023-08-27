@@ -2,8 +2,7 @@ class DataValidator {
   // email validation
 
   static isValidEmail(data) {
-    const emailRegex =
-      /^(?=.{1,320}$)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+$/;
     return emailRegex.test(data);
   }
 

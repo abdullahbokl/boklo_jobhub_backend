@@ -12,7 +12,7 @@ class LoginService {
 
       if (!user) {
         return res.status(404).json({
-          message: "User not found",
+          message: "Invalid email or password",
         });
       }
 
@@ -22,7 +22,7 @@ class LoginService {
       });
       if (!isMatch) {
         return res.status(401).json({
-          message: "Password is incorrect",
+          message: "Invalid email or password",
         });
       }
 
@@ -32,16 +32,16 @@ class LoginService {
         isAgent: user.isAgent,
       });
 
-      const { password: omittedPassword, __v, ...userData } = user._doc;
+      const { password: omittedPassword, __v, _id, ...userData } = user._doc;
+      userData.id = _id;
       userData.token = jwtToken;
 
-      return res.status(200).json({
-        user: userData,
-      });
+      return res.status(200).json(userData);
     } catch (error) {
+      console.log(error);
+
       return res.status(500).json({
-        message: "User login failed",
-        error: error.message.split(","),
+        message: error,
       });
     }
   }

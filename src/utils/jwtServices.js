@@ -11,7 +11,7 @@ class JwtService {
         isAgent,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "21d" }
+      { expiresIn: 60 * 60 * 24 * 7 }
     );
     return token;
   }
@@ -26,6 +26,10 @@ class JwtService {
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET environment variable is not set.");
     }
+  }
+
+  static decode(token) {
+    return jwt.decode(token);
   }
 }
 

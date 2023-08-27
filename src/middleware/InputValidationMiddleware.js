@@ -7,14 +7,12 @@ class InputValidationMiddleware {
     if (emailErrors.length > 0) {
       return res.status(400).json({
         message: "Email is invalid",
-        errors: emailErrors,
       });
     }
     const passwordErrors = validator.validatePassword(password);
     if (passwordErrors.length > 0) {
       return res.status(400).json({
         message: "Password is invalid",
-        errors: passwordErrors,
       });
     }
 
@@ -22,7 +20,6 @@ class InputValidationMiddleware {
     if (userNameErrors.length > 0) {
       return res.status(400).json({
         message: "Username is invalid",
-        errors: userNameErrors,
       });
     }
 
@@ -31,14 +28,13 @@ class InputValidationMiddleware {
 
   static validateLoginInput(req, res, next) {
     const { email, password, userName } = req.body;
-    const query = email ? { email } : { userName };
+    const query = email ? email : userName;
 
     if (validator.isValidEmail(query)) {
       const emailErrors = validator.validateEmail(email);
       if (emailErrors.length > 0) {
         return res.status(400).json({
           message: "Email is invalid",
-          errors: emailErrors,
         });
       }
     } else {
@@ -46,7 +42,6 @@ class InputValidationMiddleware {
       if (userNameErrors.length > 0) {
         return res.status(400).json({
           message: "Username is invalid",
-          errors: userNameErrors,
         });
       }
     }
@@ -55,7 +50,6 @@ class InputValidationMiddleware {
     if (passwordErrors.length > 0) {
       return res.status(400).json({
         message: "Password is invalid",
-        errors: passwordErrors,
       });
     }
 

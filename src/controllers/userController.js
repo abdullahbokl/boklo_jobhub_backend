@@ -1,26 +1,11 @@
 import EncryptionServices from "../utils/encryptionServices.js";
 import UserModel from "../models/userModel.js";
+import JwtService from "../utils/jwtServices.js";
+import UpdateUserService from "../services/users/updateUserService.js";
 
 class UserController {
   static async updateUser(req, res) {
-    try {
-      const { password, ...restOfBody } = req.body;
-      const encryptedPassword = await EncryptionServices.encryptText(password);
-
-      const updatedUser = await UserModel.findByIdAndUpdate(
-        req.params.id,
-        {
-          $set: { ...restOfBody, password: encryptedPassword },
-        },
-        { new: true }
-      );
-
-      const { password: omittedPassword, __v, ...userData } = updatedUser._doc;
-
-      res.status(200).json(userData);
-    } catch (error) {
-      res.status(500).json(error);
-    }
+    await UpdateUserService.updateUser(req, res);
   }
 
   static async deleteUser(req, res) {
@@ -28,7 +13,10 @@ class UserController {
       await UserModel.findByIdAndDelete(req.params.id);
       res.status(200).json("User has been deleted");
     } catch (error) {
-      res.status(500).json(error);
+      console.log(error);
+      res.status(500).json({
+        message: error,
+      });
     }
   }
 
@@ -38,9 +26,14 @@ class UserController {
 
       const { password: omittedPassword, __v, ...userData } = user._doc;
 
+      userData.time = user._id.getTimestamp().toLocaleString();
+
       res.status(200).json(userData);
     } catch (error) {
-      res.status(500).json(error);
+      console.log(error);
+      res.status(500).json({
+        message: error,
+      });
     }
   }
 
@@ -51,7 +44,10 @@ class UserController {
 
       res.status(200).json(users);
     } catch (error) {
-      res.status(500).json(error);
+      console.log(error);
+      res.status(500).json({
+        message: error,
+      });
     }
   }
 }

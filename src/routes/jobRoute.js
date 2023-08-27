@@ -17,7 +17,7 @@ const router = Router();
 
 router.post(
   "/",
-  AuthMiddleware.verifyAndAuthorization,
+  AuthMiddleware.verifyToken,
   JobController.createJob
 );
 
@@ -34,7 +34,7 @@ router.post(
 
 router.put(
   "/:id",
-  AuthMiddleware.verifyAndAuthorization,
+  AuthMiddleware.verifyToken,
   JobController.updateJob
 );
 
@@ -51,7 +51,7 @@ router.put(
 
 router.delete(
   "/:id",
-  AuthMiddleware.verifyAndAuthorization,
+  AuthMiddleware.verifyToken,
   JobController.deleteJob
 );
 
