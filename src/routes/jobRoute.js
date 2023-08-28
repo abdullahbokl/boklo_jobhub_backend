@@ -1,5 +1,5 @@
 import JobController from "../controllers/JobController.js";
-import AuthMiddleware from "../middleware/AuthMiddleware.js";
+import AuthMiddleware from "../middleware/authMiddleware.js";
 import { Router } from "express";
 
 const router = Router();
@@ -15,11 +15,7 @@ const router = Router();
  *
  **/
 
-router.post(
-  "/",
-  AuthMiddleware.verifyToken,
-  JobController.createJob
-);
+router.post("/", AuthMiddleware.verifyToken, JobController.createJob);
 
 /**
  * @swagger
@@ -32,11 +28,7 @@ router.post(
  *
  **/
 
-router.put(
-  "/:id",
-  AuthMiddleware.verifyToken,
-  JobController.updateJob
-);
+router.put("/:id", AuthMiddleware.verifyToken, JobController.updateJob);
 
 /**
  * @swagger
@@ -49,11 +41,7 @@ router.put(
  *
  **/
 
-router.delete(
-  "/:id",
-  AuthMiddleware.verifyToken,
-  JobController.deleteJob
-);
+router.delete("/:id", AuthMiddleware.verifyToken, JobController.deleteJob);
 
 /**
  * @swagger

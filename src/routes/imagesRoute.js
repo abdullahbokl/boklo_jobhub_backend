@@ -1,5 +1,5 @@
-import MulterMiddleWare from "../middleware/MulterMiddleWare.js";
-import UploadImageMiddleware from "../middleware/UploadImageMiddleWare.js";
+import MulterMiddleWare from "../middleware/multerMiddleWare.js";
+import UploadImageMiddleware from "../middleware/uploadImageMiddleWare.js";
 import { Router } from "express";
 
 const router = Router();

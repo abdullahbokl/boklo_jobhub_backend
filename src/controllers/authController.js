@@ -1,5 +1,5 @@
-import RegisterService from "../services/auth/RegisterService.js";
-import LoginService from "../services/auth/LoginService.js";
+import RegisterService from "../services/auth/registerService.js";
+import LoginService from "../services/auth/loginService.js";
 
 class UserController {
   static async createUser(req, res) {

@@ -1,5 +1,5 @@
 import bookmarkController from "../controllers/bookmarkController.js";
-import AuthMiddleware from "../middleware/AuthMiddleware.js";
+import AuthMiddleware from "../middleware/authMiddleware.js";
 import { Router } from "express";
 const router = Router();
 
@@ -14,11 +14,7 @@ const router = Router();
  *
  **/
 
-router.post(
-  "/",
-  AuthMiddleware.verifyToken,
-  bookmarkController.createBookmark
-);
+router.post("/", AuthMiddleware.verifyToken, bookmarkController.createBookmark);
 
 /**
  * @swagger
