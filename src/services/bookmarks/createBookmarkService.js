@@ -1,5 +1,5 @@
 import JobModel from "../../models/jobModel.js";
-import BookMarkModel from "../../models/bookmarkModel.js";
+import UserModel from "../../models/userModel.js";
 
 class CreateBookmarkService {
   static async createBookmark(req, res) {
@@ -13,21 +13,26 @@ class CreateBookmarkService {
         });
       }
 
-      const bookmark = new BookMarkModel({
-        userId: req.user.id,
-        jobId: jobId,
-      });
+      const user = await UserModel.findById(req.user.id);
 
-      const savedBookmark = await bookmark.save();
+      for (let i = 0; i < user.bookmarks.length; i++) {
+        if (user.bookmarks[i] === jobId) {
+          console.log("Job already bookmarked");
+          res.status(400).json({
+            message: "Job already bookmarked",
+          });
+        }
+      }
 
-      const {
-        password: omittedPassword,
-        __v,
-        updatedAt,
-        ...newBookmark
-      } = savedBookmark._doc;
+      const newUser = await UserModel.findByIdAndUpdate(
+        req.user.id,
+        { $push: { bookmarks: { job: jobId } } },
+        { new: true }
+      );
 
-      res.status(200).json(newBookmark);
+      const { bookmarks } = newUser;
+
+      res.status(200).json({ bookmarks });
     } catch (error) {
       console.log(error);
       res.status(500).json({
@@ -36,6 +41,5 @@ class CreateBookmarkService {
     }
   }
 }
-
 
 export default CreateBookmarkService;

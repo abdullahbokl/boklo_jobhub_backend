@@ -1,7 +1,6 @@
-import EncryptionServices from "../utils/encryptionServices.js";
 import UserModel from "../models/userModel.js";
-import JwtService from "../utils/jwtServices.js";
 import UpdateUserService from "../services/users/updateUserService.js";
+import GetUserService from "../services/users/getUserService.js";
 
 class UserController {
   static async updateUser(req, res) {
@@ -21,20 +20,7 @@ class UserController {
   }
 
   static async getUser(req, res) {
-    try {
-      const user = await UserModel.findById(req.params.id);
-
-      const { password: omittedPassword, __v, ...userData } = user._doc;
-
-      userData.time = user._id.getTimestamp().toLocaleString();
-
-      res.status(200).json(userData);
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        message: error,
-      });
-    }
+    await GetUserService.getUser(req, res);
   }
 
   static async getAllUsers(req, res) {

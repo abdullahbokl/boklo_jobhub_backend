@@ -22,17 +22,27 @@ const UserModel = new mongoose.Schema({
   phone: {
     type: String,
   },
-  profilePic: {
-    type: [
-      {
-        url: String,
-        uploadedAt: {
-          type: String,
-          default: new Date().toISOString().slice(0, 19).replace("T", " "),
-        },
+  profilePic: [
+    {
+      url: String,
+      uploadedAt: {
+        type: String,
+        default: new Date().toISOString().slice(0, 19).replace("T", " "),
       },
-    ],
-  },
+    },
+  ],
+  bookmarks: [
+    {
+      job: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Job",
+      },
+      createdAt: {
+        type: String,
+        default: new Date().toISOString().slice(0, 19).replace("T", " "),
+      },
+    },
+  ],
   location: {
     type: String,
   },
