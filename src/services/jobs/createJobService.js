@@ -5,6 +5,7 @@ class CreateJobService {
     const newJob = new JobModel(req.body);
     try {
       const savedJob = await newJob.save();
+      savedJob.id = savedJob._id;
       res.status(200).json(savedJob);
     } catch (error) {
       console.log(error);

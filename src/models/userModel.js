@@ -16,12 +16,8 @@ const UserModel = new mongoose.Schema({
     required: true,
     minlength: 8,
   },
-  fullName: {
-    type: String,
-  },
-  phone: {
-    type: String,
-  },
+  fullName: { type: String },
+  phone: { type: String },
   profilePic: [
     {
       url: String,
@@ -33,7 +29,7 @@ const UserModel = new mongoose.Schema({
   ],
   bookmarks: [
     {
-      job: {
+      jobId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Job",
       },
@@ -43,21 +39,11 @@ const UserModel = new mongoose.Schema({
       },
     },
   ],
-  location: {
-    type: String,
-  },
-  isAdmin: {
-    type: Boolean,
-  },
-  isAgent: {
-    type: Boolean,
-  },
-  skills: {
-    type: Array,
-  },
-  bio: {
-    type: String,
-  },
+  location: { type: String },
+  isAdmin: { type: Boolean },
+  isAgent: { type: Boolean },
+  skills: { type: Array },
+  bio: { type: String },
 });
 
 export default mongoose.model("User", UserModel);

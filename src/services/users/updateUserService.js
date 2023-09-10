@@ -19,7 +19,7 @@ class UpdateUserService {
       };
 
       if (Array.isArray(skills) && skills.length > 0) {
-        updateObject.$addToSet = { skills: { $each: skills } };
+        updateObject.$set.skills = skills;
       }
 
       if (typeof profilePic === "string" && profilePic.trim() !== "") {
@@ -27,7 +27,7 @@ class UpdateUserService {
           url: profilePic,
         };
 
-        updateObject.$addToSet.profilePic = newProfilePic;
+        updateObject.$push = { profilePic: newProfilePic };
       }
 
       const updatedUser = await UserModel.findByIdAndUpdate(

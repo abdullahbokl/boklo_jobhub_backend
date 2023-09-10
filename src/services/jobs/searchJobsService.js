@@ -2,14 +2,24 @@ import JobModel from "../../models/jobModel.js";
 
 class SearchJobsService {
   static async searchJobs(req, res) {
-    const query = req.params.query;
+    const searchWord = req.params.query;
     try {
+      await JobModel.createIndexes([
+        {
+          key: {
+            title: "text",
+            description: "text",
+          },
+          name: "jobsearch",
+        },
+      ]);
+
       const result = await JobModel.aggregate([
         {
           $search: {
             index: "jobsearch",
             text: {
-              query: query,
+              query: searchWord,
               path: {
                 wildcard: "*",
               },
@@ -18,14 +28,17 @@ class SearchJobsService {
         },
       ]);
 
-      // const result = await JobModel.find({
-      //   $or: [
-      //     { title: { $regex: query, $options: "i" } },
-      //     { description: { $regex: query, $options: "i" } },
-      //   ],
-      // });
+      const foundJobs = result.map((job) => {
+        const { _id, __v, agentId, ...rest } = job;
+        return {
+          id: job._id,
+          agentId: job.agentId._id,
+          ...rest,
+        };
+      });
 
-      res.status(200).json(result);
+      console.log(foundJobs);
+      res.status(200).json(foundJobs);
     } catch (error) {
       console.log(error);
       res.status(500).json({

@@ -5,7 +5,9 @@ class GetJobService {
     try {
       const job = await JobModel.findById(req.params.id);
 
-      res.status(200).json(job);
+      const { _id, __v, ...rest } = job._doc;
+      rest.id = _id;
+      res.status(200).json(rest);
     } catch (error) {
       console.log(error);
       res.status(500).json({

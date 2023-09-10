@@ -25,6 +25,7 @@ class RegisterService {
           : error.keyValue.userName
           ? "User name already exists"
           : "User already exists";
+          console.log(errorMessage);
         return res.status(409).json({
           message: errorMessage,
         });
