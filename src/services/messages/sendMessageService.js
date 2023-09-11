@@ -4,7 +4,7 @@ import UserModel from "../../models/userModel.js";
 
 async function sendMessage(req, res) {
   const senderId = req.user.id;
-  const { content, receiverId, chatId } = req.body;
+  const { content, receiverId, id: chatId } = req.body;
 
   if (!content) {
     return res.status(400).json({ error: "Content is required" });

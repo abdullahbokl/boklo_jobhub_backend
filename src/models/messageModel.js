@@ -7,16 +7,8 @@ const messageModel = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    content: {
-      type: String,
-      trim: true,
-      required: true,
-    },
-    receiver: {
-      type: String,
-      trim: true,
-      // it can be a group or a user
-    },
+    content: { type: String, trim: true, required: true },
+    receiver: { type: String, trim: true },
     chat: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Chat",

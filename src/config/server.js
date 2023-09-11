@@ -1,6 +1,6 @@
 import app from "../app.js";
 import db from "./db.js";
-import io from "socket.io";
+import { Server } from "socket.io";
 
 const port = process.env.PORT || 7000;
 const server = app
@@ -14,10 +14,12 @@ const server = app
     console.error(error);
   });
 
-const socket = io(server, {
-  pingTimeout: 60000,
+const socket = new Server(server, {
   cors: {
-    origin: "*",
+    pingTimeout: 60000,
+    cors: {
+      origin: "http://localhost:" + process.env.PORT,
+    },
   },
 });
 

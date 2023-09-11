@@ -5,7 +5,9 @@ class GetUserService {
     try {
       const user = await UserModel.findById(req.params.id);
 
-      const { password: omittedPassword, __v, ...userData } = user._doc;
+      const { password: omittedPassword, __v, _id, ...userData } = user._doc;
+
+      userData.id = _id;
 
       res.status(200).json(userData);
     } catch (error) {
