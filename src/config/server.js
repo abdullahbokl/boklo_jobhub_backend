@@ -42,22 +42,27 @@ socket.on("connection", (socket) => {
     socket.to(room).emit("stop-typing", room);
   });
 
-  socket.on("join chat", (room) => {
-    console.log("join chat", room);
+  socket.on("join-chat", (room) => {
+    console.log("join-chat", room);
     socket.join(room);
   });
 
-  socket.on("new message", (newMessageReceived) => {
-    console.log("new message", newMessageReceived);
+  socket.on("leave-chat", (room) => {
+    console.log("leave-chat", room);
+    socket.leave(room);
+  });
+
+  socket.on("new-message", (newMessageReceived) => {
+    console.log("new-message", newMessageReceived);
     const chat = newMessageReceived.chat;
-    const room = chat._id;
+    const room = chat.id;
     const sender = newMessageReceived.sender;
 
-    if (!sender || !sender._id) {
+    if (!sender || !sender.id) {
       return console.log("sender not found");
     }
 
-    const senderId = sender._id.toString();
+    const senderId = sender.id.toString();
     console.log("senderId", senderId);
     const chatUsers = chat.users;
 
@@ -65,7 +70,7 @@ socket.on("connection", (socket) => {
       return console.log("chatUsers not found");
     }
 
-    socket.to(room).emit("message received", newMessageReceived);
+    socket.to(room).emit("message-received", newMessageReceived);
     socket.to(room).emit("message sent", "New message sent");
   });
 
