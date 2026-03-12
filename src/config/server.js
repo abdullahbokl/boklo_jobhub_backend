@@ -1,81 +1,60 @@
 import app from "../app.js";
 import db from "./db.js";
 import { Server } from "socket.io";
+import logger from "../utils/logger.js";
+import JwtService from "../utils/jwtServices.js";
+import { UnauthorizedError } from "../utils/errors.js";
 
 const port = process.env.PORT || 7000;
-const server = app
-  .listen(port, async () => {
-    await db();
-  })
-  .on("listening", () => {
-    console.log(`Listening on port ${port}`);
-  })
-  .on("error", (error) => {
-    console.error(error);
-  });
 
-const socket = new Server(server, {
-  cors: {
-    pingTimeout: 60000,
-    cors: {
-      origin: "http://localhost:" + process.env.PORT,
-    },
-  },
+const server = app.listen(port, async () => {
+  await db();
+  logger.info(`🚀 Server running on port ${port}`);
 });
 
-socket.on("connection", (socket) => {
-  console.log("connected to socket");
+server.on("error", (error) => logger.error("Server error:", error));
 
-  socket.on("setup", (userId) => {
-    socket.join(userId);
-    socket.broadcast.emit("online-user", userId);
-    console.log("online-user", userId);
-  });
+const allowedOrigins = process.env.CORS_ORIGIN?.split(",") || ["http://localhost:3000"];
 
-  socket.on("typing", (room) => {
-    console.log("typing", room);
-    socket.to(room).emit("typing", room);
-  });
+const io = new Server(server, {
+  pingTimeout: 60000,
+  cors: { origin: allowedOrigins, credentials: true },
+});
 
-  socket.on("stop-typing", (room) => {
-    console.log("stop-typing", room);
-    socket.to(room).emit("stop-typing", room);
-  });
+// ─── Socket.io JWT authentication middleware ─────────────────────────────────
+io.use((socket, next) => {
+  const token =
+    socket.handshake.auth?.token ||
+    socket.handshake.headers?.authorization?.replace("Bearer ", "");
+  if (!token) return next(new UnauthorizedError("No socket auth token"));
+  try {
+    socket.userId = JwtService.verify(token).id;
+    next();
+  } catch {
+    next(new UnauthorizedError("Invalid or expired socket token"));
+  }
+});
 
-  socket.on("join-chat", (room) => {
-    console.log("join-chat", room);
-    socket.join(room);
-  });
+io.on("connection", (socket) => {
+  logger.info(`Socket connected: ${socket.id} (user: ${socket.userId})`);
 
-  socket.on("leave-chat", (room) => {
-    console.log("leave-chat", room);
-    socket.leave(room);
-  });
+  // Join the user's personal room using verified JWT userId
+  socket.join(socket.userId);
+  socket.broadcast.emit("online-user", socket.userId);
+
+  socket.on("typing", (room) => socket.to(room).emit("typing", room));
+  socket.on("stop-typing", (room) => socket.to(room).emit("stop-typing", room));
+  socket.on("join-chat", (room) => socket.join(room));
+  socket.on("leave-chat", (room) => socket.leave(room));
 
   socket.on("new-message", (newMessageReceived) => {
-    console.log("new-message", newMessageReceived);
-    const chat = newMessageReceived.chat;
-    const room = chat.id;
-    const sender = newMessageReceived.sender;
-
-    if (!sender || !sender.id) {
-      return console.log("sender not found");
-    }
-
-    const senderId = sender.id.toString();
-    console.log("senderId", senderId);
-    const chatUsers = chat.users;
-
-    if (!chatUsers) {
-      return console.log("chatUsers not found");
-    }
-
-    socket.to(room).emit("message-received", newMessageReceived);
-    socket.to(room).emit("message sent", "New message sent");
+    const chat = newMessageReceived?.chat;
+    const sender = newMessageReceived?.sender;
+    if (!chat?.id || !sender?.id) return;
+    socket.to(chat.id).emit("message-received", newMessageReceived);
   });
 
-  socket.off("setup", (userId) => {
-    console.log("offline-user", userId);
-    socket.leave(userId);
+  socket.on("disconnect", () => {
+    logger.info(`Socket disconnected: ${socket.id}`);
   });
 });
