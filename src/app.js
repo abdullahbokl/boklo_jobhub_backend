@@ -1,11 +1,10 @@
+import "dotenv/config";
 import express from "express";
 import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import mongoSanitize from "express-mongo-sanitize";
 import swaggerUi from "swagger-ui-express";
-import dotenv from "dotenv";
 
 import authRoute from "./routes/authRoute.js";
 import userRoute from "./routes/userRoute.js";
@@ -17,17 +16,17 @@ import imagesRoute from "./routes/imagesRoute.js";
 import applicationRoute from "./routes/applicationRoute.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { requestId } from "./middleware/requestId.js";
+import { sanitizeRequest } from "./middleware/sanitizeRequest.js";
 import logger, { morganStream } from "./utils/logger.js";
 import { swaggerSpec } from "./config/swagger.js";
 
-dotenv.config();
-
 const app = express();
+const corsOrigins = process.env.CORS_ORIGIN?.split(",").map((origin) => origin.trim()).filter(Boolean);
 
 // ─── Core middleware ─────────────────────────────────────────────────────────
 app.use(requestId);
 app.use(helmet());
-app.use(cors({ origin: process.env.CORS_ORIGIN?.split(",") || "*", credentials: true }));
+app.use(cors({ origin: corsOrigins?.length ? corsOrigins : true, credentials: true }));
 
 // ─── Rate limiting ───────────────────────────────────────────────────────────
 const limiter = rateLimit({
@@ -45,8 +44,16 @@ const authLimiter = rateLimit({
 
 app.use(limiter);
 app.use(express.json({ limit: "10mb" }));
-app.use(mongoSanitize()); // NoSQL injection protection
+app.use(sanitizeRequest); // NoSQL injection protection
 app.use(morgan("combined", { stream: morganStream }));
+
+app.get("/", (_req, res) => {
+  res.status(200).json({ success: true, message: "JobHub backend is running." });
+});
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({ success: true, status: "ok" });
+});
 
 // ─── API Documentation ────────────────────────────────────────────────────────
 if (process.env.NODE_ENV !== "production") {

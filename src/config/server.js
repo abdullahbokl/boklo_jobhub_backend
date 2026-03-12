@@ -1,3 +1,4 @@
+import "dotenv/config";
 import app from "../app.js";
 import db from "./db.js";
 import { Server } from "socket.io";
@@ -7,18 +8,26 @@ import { UnauthorizedError } from "../utils/errors.js";
 
 const port = process.env.PORT || 7000;
 
-const server = app.listen(port, async () => {
-  await db();
+const allowedOrigins = process.env.CORS_ORIGIN?.split(",").map((origin) => origin.trim()).filter(Boolean) || ["http://localhost:3000"];
+
+await db();
+
+const server = app.listen(port, () => {
   logger.info(`🚀 Server running on port ${port}`);
 });
 
-server.on("error", (error) => logger.error("Server error:", error));
-
-const allowedOrigins = process.env.CORS_ORIGIN?.split(",") || ["http://localhost:3000"];
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    logger.error(`Port ${port} is already in use. Run: fuser -k ${port}/tcp`);
+    process.exit(1);
+  }
+  logger.error("Server error:", error);
+  process.exit(1);
+});
 
 const io = new Server(server, {
   pingTimeout: 60000,
-  cors: { origin: allowedOrigins, credentials: true },
+  cors: { origin: allowedOrigins.length ? allowedOrigins : true, credentials: true },
 });
 
 // ─── Socket.io JWT authentication middleware ─────────────────────────────────
