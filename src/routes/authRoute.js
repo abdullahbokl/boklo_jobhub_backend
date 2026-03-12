@@ -1,19 +1,11 @@
 import { Router } from "express";
-import authController from "../controllers/authController.js";
-import InputValidationMiddleware from "../middleware/inputValidationMiddleware.js";
-
+import AuthController from "../controllers/authController.js";
+import { validate } from "../validators/validate.js";
+import { registerSchema, loginSchema, refreshTokenSchema } from "../validators/authValidator.js";
+import AuthMiddleware from "../middleware/AuthMiddleware.js";
 const router = Router();
-
-router.post(
-  "/register",
-  InputValidationMiddleware.validateRegisterInput,
-  authController.createUser
-);
-
-router.post(
-  "/login",
-  InputValidationMiddleware.validateLoginInput,
-  authController.loginUser
-);
-
+router.post("/register", validate(registerSchema), AuthController.createUser);
+router.post("/login", validate(loginSchema), AuthController.loginUser);
+router.post("/refresh-token", validate(refreshTokenSchema), AuthController.refreshToken);
+router.post("/logout", AuthMiddleware.verifyToken, AuthController.logout);
 export default router;

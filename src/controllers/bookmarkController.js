@@ -1,18 +1,9 @@
-import createBookmarkService from "../services/bookmarks/createBookmarkService.js";
-import deleteBookmarkService from "../services/bookmarks/deleteBookmarkService.js";
-import getBookmarksService from "../services/bookmarks/getBookmarkService.js";
+import AddBookmarkService from "../services/bookmarks/addBookmarkService.js";
+import RemoveBookmarkService from "../services/bookmarks/removeBookmarkService.js";
+import GetBookmarksService from "../services/bookmarks/getBookmarksService.js";
 class BookmarkController {
-  static async createBookmark(req, res) {
-    await createBookmarkService(req, res);
-  }
-
-  static async deleteBookmark(req, res) {
-    await deleteBookmarkService(req, res);
-  }
-
-  static async getBookmarks(req, res) {
-    await getBookmarksService(req, res);
-  }
+  static addBookmark(req, res, next) { return AddBookmarkService.addBookmark(req, res, next); }
+  static removeBookmark(req, res, next) { return RemoveBookmarkService.removeBookmark(req, res, next); }
+  static getBookmarks(req, res, next) { return GetBookmarksService.getBookmarks(req, res, next); }
 }
-
 export default BookmarkController;

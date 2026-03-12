@@ -1,15 +1,9 @@
-import bookmarkController from "../controllers/bookmarkController.js";
-import AuthMiddleware from "../middleware/authMiddleware.js";
 import { Router } from "express";
+import BookmarkController from "../controllers/bookmarkController.js";
+import AuthMiddleware from "../middleware/AuthMiddleware.js";
 const router = Router();
-
-router
-  .route("/")
-  .post(AuthMiddleware.verifyToken, bookmarkController.createBookmark)
-  .get(AuthMiddleware.verifyToken, bookmarkController.getBookmarks);
-
-router
-  .route("/:jobId")
-  .delete(AuthMiddleware.verifyToken, bookmarkController.deleteBookmark);
-
+router.use(AuthMiddleware.verifyToken);
+router.get("/", BookmarkController.getBookmarks);
+router.post("/", BookmarkController.addBookmark);
+router.delete("/:jobId", BookmarkController.removeBookmark);
 export default router;

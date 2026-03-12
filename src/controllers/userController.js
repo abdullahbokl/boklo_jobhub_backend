@@ -1,41 +1,17 @@
 import UserModel from "../models/userModel.js";
 import UpdateUserService from "../services/users/updateUserService.js";
 import GetUserService from "../services/users/getUserService.js";
-
+import { ApiResponse } from "../utils/apiResponse.js";
 class UserController {
-  static async updateUser(req, res) {
-    await UpdateUserService.updateUser(req, res);
-  }
-
-  static async deleteUser(req, res) {
+  static getUser(req, res, next) { return GetUserService.getUser(req, res, next); }
+  static updateUser(req, res, next) { return UpdateUserService.updateUser(req, res, next); }
+  static async deleteUser(req, res, next) {
     try {
-      await UserModel.findByIdAndDelete(req.params.id);
-      res.status(200).json("User has been deleted");
+      await UserModel.findByIdAndDelete(req.user.id);
+      return ApiResponse.success(res, null, "User deleted");
     } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        message: error,
-      });
-    }
-  }
-
-  static async getUser(req, res) {
-    await GetUserService.getUser(req, res);
-  }
-
-  static async getAllUsers(req, res) {
-    const query = req.query.new;
-    try {
-      const users = await UserModel.find();
-
-      res.status(200).json(users);
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        message: error,
-      });
+      next(error);
     }
   }
 }
-
 export default UserController;

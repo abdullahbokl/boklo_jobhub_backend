@@ -1,13 +1,7 @@
 import getAllChats from "../services/chats/getAllChatsService.js";
 import accessChat from "../services/chats/accessChatService.js";
-
 class ChatController {
-  static async getAllChats(req, res) {
-    await getAllChats(req, res);
-  }
-  static async accessChat(req, res) {
-    await accessChat(req, res);
-  }
+  static getAllChats(req, res, next) { return getAllChats(req, res, next); }
+  static accessChat(req, res, next) { return accessChat(req, res, next); }
 }
-
 export default ChatController;
