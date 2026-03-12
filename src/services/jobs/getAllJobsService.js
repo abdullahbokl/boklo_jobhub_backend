@@ -1,25 +1,24 @@
 import JobModel from "../../models/jobModel.js";
-
+import { ApiResponse } from "../../utils/apiResponse.js";
 class GetAllJobsService {
-  static async getAllJobs(req, res) {
+  static async getAllJobs(req, res, next) {
     try {
-      const jobs = await JobModel.find();
-
-      const newJobs = jobs.map((job) => {
-        const { _id, __v, agentId, ...rest } = job._doc;
-        return {
-          id: job._id,
-          agentId: job.agentId._id,
-          ...rest,
-        };
-      });
-
-      res.status(200).json(newJobs);
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const limit = Math.min(50, parseInt(req.query.limit) || 10);
+      const skip = (page - 1) * limit;
+      const [jobs, total] = await Promise.all([
+        JobModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+        JobModel.countDocuments(),
+      ]);
+      const data = jobs.map(({ _id, __v, agentId, ...rest }) => ({
+        id: _id,
+        agentId: agentId?.toString(),
+        ...rest,
+      }));
+      return ApiResponse.paginated(res, data, total, page, limit);
     } catch (error) {
-      console.log(error);
-      res.status(500).json(error);
+      next(error);
     }
   }
 }
-
 export default GetAllJobsService;

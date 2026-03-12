@@ -1,51 +1,33 @@
 import JobModel from "../../models/jobModel.js";
-
+import { ApiResponse } from "../../utils/apiResponse.js";
 class SearchJobsService {
-  static async searchJobs(req, res) {
-    const searchWord = req.params.query;
+  static async searchJobs(req, res, next) {
     try {
-      await JobModel.createIndexes([
-        {
-          key: {
-            title: "text",
-            description: "text",
-          },
-          name: "jobsearch",
-        },
+      const query = req.params.query;
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const limit = Math.min(50, parseInt(req.query.limit) || 10);
+      const skip = (page - 1) * limit;
+      const filter = {
+        $or: [
+          { title: { $regex: query, $options: "i" } },
+          { company: { $regex: query, $options: "i" } },
+          { location: { $regex: query, $options: "i" } },
+          { description: { $regex: query, $options: "i" } },
+        ],
+      };
+      const [jobs, total] = await Promise.all([
+        JobModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+        JobModel.countDocuments(filter),
       ]);
-
-      const result = await JobModel.aggregate([
-        {
-          $search: {
-            index: "jobsearch",
-            text: {
-              query: searchWord,
-              path: {
-                wildcard: "*",
-              },
-            },
-          },
-        },
-      ]);
-
-      const foundJobs = result.map((job) => {
-        const { _id, __v, agentId, ...rest } = job;
-        return {
-          id: job._id,
-          agentId: job.agentId._id,
-          ...rest,
-        };
-      });
-
-      console.log(foundJobs);
-      res.status(200).json(foundJobs);
+      const data = jobs.map(({ _id, __v, agentId, ...rest }) => ({
+        id: _id,
+        agentId: agentId?.toString(),
+        ...rest,
+      }));
+      return ApiResponse.paginated(res, data, total, page, limit);
     } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        message: error,
-      });
+      next(error);
     }
   }
 }
-
 export default SearchJobsService;

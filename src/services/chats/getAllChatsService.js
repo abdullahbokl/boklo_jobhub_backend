@@ -1,56 +1,31 @@
 import chatModel from "../../models/chatModel.js";
 import UserModel from "../../models/userModel.js";
-
-async function getAllChats(req, res) {
+import { ApiResponse } from "../../utils/apiResponse.js";
+async function getAllChats(req, res, next) {
   try {
     let results = await chatModel
       .find({ users: { $elemMatch: { $eq: req.user.id } } })
-      .populate("users", "-password -__v")
-      .populate("groupAdmin", "-password -__v")
+      .populate("users", "-password -__v -refreshToken")
+      .populate("groupAdmin", "-password -__v -refreshToken")
       .populate("latestMessage")
       .sort({ updatedAt: -1 });
-
-    results = await UserModel.populate(results, {
-      path: "latestMessage.sender",
+    results = await UserModel.populate(results, { path: "latestMessage.sender", select: "-password -refreshToken" });
+    const data = results.map((chat) => {
+      const obj = chat.toObject();
+      const { _id, __v, users, latestMessage, ...rest } = obj;
+      return {
+        id: _id,
+        ...rest,
+        users: users.map(({ _id, __v, password, refreshToken, ...u }) => ({ id: _id, ...u })),
+        latestMessage: latestMessage ? _sanitizeMessage(latestMessage) : null,
+      };
     });
-
-    results = results.map((chat) => {
-      const newUsers = chat.users.map((user) => {
-        const { _id, ...rest } = user._doc;
-        rest.id = _id;
-        return rest;
-      });
-
-      const { _id, users, ...rest } = chat._doc;
-      rest.id = _id;
-      rest.users = newUsers;
-      rest.latestMessage = _handleLatestMessage(rest.latestMessage);
-
-      return rest;
-    });
-
-    res.status(200).json(results);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Something went wrong" });
-  }
+    return ApiResponse.success(res, data);
+  } catch (error) { next(error); }
 }
-
-function _handleLatestMessage(latestMessage) {
-  if (!latestMessage) {
-    return latestMessage;
-  }
-
-  const { sender, _id, ...rest } = latestMessage._doc;
-  rest.id = _id;
-  rest.sender = _handleSender(sender);
-  return rest;
+function _sanitizeMessage(msg) {
+  const { _id, __v, sender, ...rest } = msg;
+  const s = sender ? (() => { const { _id, __v, password, ...u } = sender; return { id: _id, ...u }; })() : null;
+  return { id: _id, ...rest, sender: s };
 }
-
-function _handleSender(sender) {
-  const { _id, ...rest } = sender._doc;
-  rest.id = _id;
-  return rest;
-}
-
 export default getAllChats;

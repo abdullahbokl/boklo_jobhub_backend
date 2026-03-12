@@ -1,20 +1,16 @@
 import JobModel from "../../models/jobModel.js";
-
+import { ApiResponse } from "../../utils/apiResponse.js";
+import { NotFoundError } from "../../utils/errors.js";
 class GetJobService {
-  static async getJob(req, res) {
+  static async getJob(req, res, next) {
     try {
-      const job = await JobModel.findById(req.params.id);
-
-      const { _id, __v, ...rest } = job._doc;
-      rest.id = _id;
-      res.status(200).json(rest);
+      const job = await JobModel.findById(req.params.id).lean();
+      if (!job) return next(new NotFoundError("Job not found"));
+      const { _id, __v, agentId, ...rest } = job;
+      return ApiResponse.success(res, { id: _id, agentId: agentId?.toString(), ...rest });
     } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        message: error,
-      });
+      next(error);
     }
   }
 }
-
 export default GetJobService;

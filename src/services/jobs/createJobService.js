@@ -1,19 +1,14 @@
 import JobModel from "../../models/jobModel.js";
-
+import { ApiResponse } from "../../utils/apiResponse.js";
+import { sanitizeDoc } from "../../utils/sanitize.js";
 class CreateJobService {
-  static async createJob(req, res) {
-    const newJob = new JobModel(req.body);
+  static async createJob(req, res, next) {
     try {
-      const savedJob = await newJob.save();
-      savedJob.id = savedJob._id;
-      res.status(200).json(savedJob);
+      const job = await new JobModel({ ...req.body, agentId: req.user.id }).save();
+      return ApiResponse.created(res, sanitizeDoc(job), "Job created successfully");
     } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        message: error,
-      });
+      next(error);
     }
   }
 }
-
 export default CreateJobService;
