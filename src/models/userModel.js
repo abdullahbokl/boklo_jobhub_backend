@@ -44,6 +44,7 @@ const UserModel = new mongoose.Schema({
   isAgent: { type: Boolean },
   skills: { type: Array },
   bio: { type: String },
+  refreshToken: { type: String, default: null },
 });
 
 export default mongoose.model("User", UserModel);
