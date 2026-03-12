@@ -42,6 +42,23 @@ build/Release
 node_modules/
 jspm_packages/
 
+# Environment files (keep .env.example)
+.env
+.env.*
+!.env.example
+
+# Uploads & generated files
+uploads/
+public/uploads/
+
+# Test results
+coverage/
+__tests__/coverage/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
