@@ -24,7 +24,7 @@ class AuthMiddleware {
   static verifyTokenAndAgent(req, res, next) {
     AuthMiddleware.verifyToken(req, res, (err) => {
       if (err) return next(err);
-      if (req.user?.isAgent || req.user?.isAdmin) return next();
+      if (req.user?.role === "company" || req.user?.isAgent || req.user?.isAdmin) return next();
       next(new ForbiddenError("Agent role required"));
     });
   }
