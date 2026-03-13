@@ -45,6 +45,18 @@ router.get("/mine", AuthMiddleware.verifyToken, ApplicationController.getMyAppli
 
 /**
  * @openapi
+ * /applications/received:
+ *   get:
+ *     tags: [Applications]
+ *     summary: Get applications received on current agent's jobs
+ *     responses:
+ *       200:
+ *         description: List of received applications
+ */
+router.get("/received", AuthMiddleware.verifyTokenAndAgent, ApplicationController.getReceived);
+
+/**
+ * @openapi
  * /applications/{id}:
  *   post:
  *     tags: [Applications]
