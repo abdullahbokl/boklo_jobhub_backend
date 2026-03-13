@@ -10,6 +10,7 @@ const chatModel = new mongoose.Schema(
         ref: "User",
       },
     ],
+    jobId: { type: mongoose.Schema.Types.ObjectId, ref: "Job", default: null },
     latestMessage: { type: mongoose.Schema.Types.ObjectId, ref: "Message" },
     groupAdmin: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
