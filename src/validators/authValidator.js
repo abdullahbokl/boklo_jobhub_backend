@@ -3,6 +3,8 @@ export const registerSchema = z.object({
   userName: z.string().min(3).max(30).regex(/^\w+$/, "Username must be alphanumeric"),
   email: z.string().email("Invalid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  role: z.enum(["seeker", "company"]).default("seeker"),
+  companyName: z.string().optional(),
 });
 export const loginSchema = z.object({
   email: z.string().email().optional(),

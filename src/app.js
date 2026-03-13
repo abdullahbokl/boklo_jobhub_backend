@@ -25,24 +25,31 @@ const corsOrigins = process.env.CORS_ORIGIN?.split(",").map((origin) => origin.t
 
 // ─── Core middleware ─────────────────────────────────────────────────────────
 app.use(requestId);
+app.use((req, res, next) => {
+  console.log("--------------------------------------------------");
+  console.log(`📡 NEW REQUEST: ${req.method} ${req.originalUrl}`);
+  console.log("--------------------------------------------------");
+  logger.info(`🔍 Incoming Request: ${req.method} ${req.originalUrl}`);
+  next();
+});
 app.use(helmet());
 app.use(cors({ origin: corsOrigins?.length ? corsOrigins : true, credentials: true }));
 
 // ─── Rate limiting ───────────────────────────────────────────────────────────
+const isDev = process.env.NODE_ENV === "development";
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
   message: { success: false, message: "Too many requests, please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
-});
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  message: { success: false, message: "Too many auth attempts, please try again later." },
+  skip: () => isDev, // ⬅ no rate limiting in dev
 });
 
-app.use(limiter);
+
+
+if (!isDev) app.use(limiter);
 app.use(express.json({ limit: "10mb" }));
 app.use(sanitizeRequest); // NoSQL injection protection
 app.use(morgan("combined", { stream: morganStream }));
@@ -62,7 +69,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // ─── Versioned Routes ─────────────────────────────────────────────────────────
-app.use("/api/v1", authLimiter, authRoute);
+app.use("/api/v1", authRoute);
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/jobs", jobRoute);
 app.use("/api/v1/bookmarks", bookmarkRoute);

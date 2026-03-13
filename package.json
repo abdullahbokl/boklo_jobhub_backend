@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/config/server.js",
-    "dev": "nodemon src/config/server.js"
+    "dev": "NODE_OPTIONS='--no-deprecation' nodemon src/config/server.js"
   },
   "keywords": [],
   "author": "",

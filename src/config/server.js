@@ -8,62 +8,91 @@ import { UnauthorizedError } from "../utils/errors.js";
 
 const port = process.env.PORT || 7000;
 
-const allowedOrigins = process.env.CORS_ORIGIN?.split(",").map((origin) => origin.trim()).filter(Boolean) || ["http://localhost:3000"];
+// Improved origin parsing
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(",").map(o => o.trim())
+    : ["http://localhost:7000", "http://10.0.2.2:7000"];
 
 await db();
 
 const server = app.listen(port, () => {
-  logger.info(`🚀 Server running on port ${port}`);
+    logger.info(`🚀 Server running on port ${port}`);
 });
 
-server.on("error", (error) => {
-  if (error.code === "EADDRINUSE") {
-    logger.error(`Port ${port} is already in use. Run: fuser -k ${port}/tcp`);
-    process.exit(1);
-  }
-  logger.error("Server error:", error);
-  process.exit(1);
-});
-
+// Socket.io initialization
 const io = new Server(server, {
-  pingTimeout: 60000,
-  cors: { origin: allowedOrigins.length ? allowedOrigins : true, credentials: true },
+    pingTimeout: 60000,
+    cors: {
+        origin: allowedOrigins, // Socket.io accepts an array of strings directly
+        credentials: true
+    },
 });
 
-// ─── Socket.io JWT authentication middleware ─────────────────────────────────
+// ─── Socket.io Middleware ─────────────────────────────────
 io.use((socket, next) => {
-  const token =
-    socket.handshake.auth?.token ||
-    socket.handshake.headers?.authorization?.replace("Bearer ", "");
-  if (!token) return next(new UnauthorizedError("No socket auth token"));
-  try {
-    socket.userId = JwtService.verify(token).id;
-    next();
-  } catch {
-    next(new UnauthorizedError("Invalid or expired socket token"));
-  }
+    // Check auth object first, then headers
+    const token = socket.handshake.auth?.token ||
+        socket.handshake.headers?.authorization?.split(" ")[1];
+
+    if (!token) return next(new UnauthorizedError("Authentication token missing"));
+
+    try {
+        const decoded = JwtService.verify(token);
+        socket.userId = decoded.id;
+        next();
+    } catch (err) {
+        logger.error(`Socket Auth Error: ${err.message}`);
+        next(new UnauthorizedError("Invalid or expired socket token"));
+    }
 });
 
 io.on("connection", (socket) => {
-  logger.info(`Socket connected: ${socket.id} (user: ${socket.userId})`);
+    // Use a descriptive log for debugging
+    logger.info(`User Connected | Socket: ${socket.id} | UserID: ${socket.userId}`);
 
-  // Join the user's personal room using verified JWT userId
-  socket.join(socket.userId);
-  socket.broadcast.emit("online-user", socket.userId);
+    socket.join(socket.userId);
+    socket.broadcast.emit("online-user", socket.userId);
 
-  socket.on("typing", (room) => socket.to(room).emit("typing", room));
-  socket.on("stop-typing", (room) => socket.to(room).emit("stop-typing", room));
-  socket.on("join-chat", (room) => socket.join(room));
-  socket.on("leave-chat", (room) => socket.leave(room));
+    socket.on("join-chat", (chatId) => {
+        if (!chatId) return;
+        socket.join(chatId);
+    });
 
-  socket.on("new-message", (newMessageReceived) => {
-    const chat = newMessageReceived?.chat;
-    const sender = newMessageReceived?.sender;
-    if (!chat?.id || !sender?.id) return;
-    socket.to(chat.id).emit("message-received", newMessageReceived);
-  });
+    socket.on("typing", (payload) => {
+        const chatId = typeof payload === "string" ? payload : payload?.chatId;
+        if (!chatId) return;
+        socket.to(chatId).emit("typing", socket.userId);
+    });
 
-  socket.on("disconnect", () => {
-    logger.info(`Socket disconnected: ${socket.id}`);
-  });
+    socket.on("stop-typing", (payload) => {
+        const chatId = typeof payload === "string" ? payload : payload?.chatId;
+        if (!chatId) return;
+        socket.to(chatId).emit("stop-typing", socket.userId);
+    });
+
+    // Consider adding a 'try-catch' or validation inside event listeners
+    socket.on("new-message", (newMessageReceived) => {
+        const chatId =
+            newMessageReceived?.chat?.id ||
+            newMessageReceived?.chat?._id ||
+            newMessageReceived?.chatId;
+        if (!chatId) return;
+
+        // Broadcast to the room excluding the sender
+        socket.to(chatId).emit("message-received", newMessageReceived);
+    });
+
+    socket.on("disconnect", (reason) => {
+        logger.info(`Socket disconnected: ${socket.id} (Reason: ${reason})`);
+        socket.broadcast.emit("offline-user", socket.userId);
+    });
+});
+
+// ─── Clean Shutdown ───────────────────────────────────────
+process.on("SIGTERM", () => {
+    logger.info("SIGTERM received. Closing server...");
+    server.close(() => {
+        logger.info("Process terminated.");
+        process.exit(0);
+    });
 });

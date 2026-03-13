@@ -24,9 +24,14 @@ const getSafeConnectionLabel = (mongoUrl, dbName) => {
 const connectToDatabase = async () => {
   try {
     const { mongoUrl, dbName } = getConnectionConfig();
+    const isDev = process.env.NODE_ENV === "development";
     const connection = await mongoose.connect(mongoUrl, {
       dbName: dbName || undefined,
       serverSelectionTimeoutMS: 10000,
+      // ─── Connection pool — protects Atlas from request bursts ───────────────
+      maxPoolSize: isDev ? 5 : 10,   // max concurrent DB connections
+      minPoolSize: 1,                 // keep at least 1 alive
+      maxIdleTimeMS: 30000,           // close idle connections after 30s
     });
 
     console.log(`MongoDB connected: ${getSafeConnectionLabel(mongoUrl, connection.connection.name)}`);
