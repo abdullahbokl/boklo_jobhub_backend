@@ -1,12 +1,13 @@
 import jwt from "jsonwebtoken";
 
 class JwtService {
-  static sign({ id, isAdmin, isAgent }) {
+  static sign({ id, isAdmin, isAgent, role }) {
     this.#ensureSecret();
-    return jwt.sign({ id, isAdmin, isAgent }, process.env.JWT_SECRET, {
+    return jwt.sign({ id, isAdmin, isAgent, role }, process.env.JWT_SECRET, {
       expiresIn: 60 * 60 * 24 * 7, // 7 days
     });
   }
+
 
   static signRefresh({ id }) {
     this.#ensureSecret();

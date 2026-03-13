@@ -16,7 +16,12 @@ class UpdateUserService {
         updateObject.$push = { profilePic: { url: profilePic } };
       }
       const updatedUser = await UserModel.findByIdAndUpdate(req.user.id, updateObject, { new: true });
-      const token = JwtService.sign({ id: updatedUser._id, isAdmin: updatedUser.isAdmin, isAgent: updatedUser.isAgent });
+      const token = JwtService.sign({
+        id: updatedUser._id,
+        isAdmin: updatedUser.isAdmin,
+        isAgent: updatedUser.role === "company",
+        role: updatedUser.role,
+      });
       return ApiResponse.success(res, { ...sanitizeDoc(updatedUser), token }, "Profile updated");
     } catch (error) {
       next(error);

@@ -11,7 +11,12 @@ class RefreshTokenService {
       if (!user || user.refreshToken !== refreshToken) {
         return next(new UnauthorizedError("Invalid refresh token"));
       }
-      const token = JwtService.sign({ id: user._id, isAdmin: user.isAdmin, isAgent: user.isAgent });
+      const token = JwtService.sign({
+        id: user._id,
+        isAdmin: user.isAdmin,
+        isAgent: user.role === "company",
+        role: user.role,
+      });
       const newRefresh = JwtService.signRefresh({ id: user._id });
       await UserModel.findByIdAndUpdate(user._id, { refreshToken: newRefresh });
       return ApiResponse.success(res, { token, refreshToken: newRefresh }, "Token refreshed");
