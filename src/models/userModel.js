@@ -40,11 +40,30 @@ const UserModel = new mongoose.Schema({
     },
   ],
   location: { type: String },
-  isAdmin: { type: Boolean },
-  isAgent: { type: Boolean },
+  role: {
+    type: String,
+    enum: ["seeker", "company", "admin"],
+    default: "seeker",
+  },
+  // Company-only fields
+  companyName: { type: String },
+  industry: { type: String },
+  website: { type: String },
+  companySize: { type: String },
+  isAdmin: { type: Boolean, default: false },
+  isAgent: { type: Boolean, default: false },
   skills: { type: Array },
   bio: { type: String },
   refreshToken: { type: String, default: null },
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
 });
+
+// For backward compatibility with existing code that checks isAgent
+UserModel.virtual("is_agent").get(function () {
+  return this.role === "company" || this.isAgent;
+});
+
 
 export default mongoose.model("User", UserModel);
