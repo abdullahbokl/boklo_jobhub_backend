@@ -1,6 +1,7 @@
 import JobModel from "../../models/jobModel.js";
 import { ApiResponse } from "../../utils/apiResponse.js";
 import { NotFoundError, ForbiddenError } from "../../utils/errors.js";
+import { toJobResponse } from "../../utils/jobQuery.js";
 class UpdateJobService {
   static async updateJob(req, res, next) {
     try {
@@ -10,8 +11,7 @@ class UpdateJobService {
         return next(new ForbiddenError("Not authorized to update this job"));
       }
       const updated = await JobModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true }).lean();
-      const { _id, __v, agentId, ...rest } = updated;
-      return ApiResponse.success(res, { id: _id, agentId: agentId?.toString(), ...rest }, "Job updated");
+      return ApiResponse.success(res, toJobResponse(updated), "Job updated");
     } catch (error) {
       next(error);
     }

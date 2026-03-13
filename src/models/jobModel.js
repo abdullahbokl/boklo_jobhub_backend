@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
 
+function parseSalaryValue(salary) {
+  if (salary == null) return 0;
+  const parsed = Number(String(salary).replace(/[^0-9.]/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 const JobModel = new mongoose.Schema(
   {
     title: {
@@ -59,8 +65,41 @@ const JobModel = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    salaryValue: {
+      type: Number,
+      default: 0,
+      index: true,
+    },
+    isArchived: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   { timestamps: true }
 );
+
+JobModel.pre("save", function syncSalaryValue(next) {
+  this.salaryValue = parseSalaryValue(this.salary);
+  next();
+});
+
+function syncSalaryValueOnUpdate() {
+  const update = this.getUpdate() || {};
+  const salary = update.salary ?? update.$set?.salary;
+  if (salary != null) {
+    const salaryValue = parseSalaryValue(salary);
+    if (update.$set) {
+      update.$set.salaryValue = salaryValue;
+    } else {
+      update.salaryValue = salaryValue;
+    }
+  }
+  this.setUpdate(update);
+}
+
+JobModel.pre("findOneAndUpdate", syncSalaryValueOnUpdate);
+JobModel.pre("updateOne", syncSalaryValueOnUpdate);
+JobModel.pre("updateMany", syncSalaryValueOnUpdate);
 
 export default mongoose.model("Job", JobModel);

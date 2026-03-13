@@ -17,5 +17,6 @@ export const createJobSchema = z.object({
   contract: z.string().min(2),
   requirements: z.array(z.string()).min(1, "At least one requirement"),
   imageUrl: imageUrlSchema.default(""),
+  isArchived: z.boolean().optional(),
 });
 export const updateJobSchema = createJobSchema.partial();
