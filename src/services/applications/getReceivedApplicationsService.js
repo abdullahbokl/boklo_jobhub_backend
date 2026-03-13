@@ -1,6 +1,7 @@
 import ApplicationModel from "../../models/applicationModel.js";
 import JobModel from "../../models/jobModel.js";
 import { ApiResponse } from "../../utils/apiResponse.js";
+import { normalizeApplicationStatus } from "../../utils/applicationStatus.js";
 
 class GetReceivedApplicationsService {
   /**
@@ -27,8 +28,9 @@ class GetReceivedApplicationsService {
         .sort({ createdAt: -1 })
         .lean();
 
-      const data = apps.map(({ _id, __v, ...rest }) => ({
+      const data = apps.map(({ _id, __v, status, ...rest }) => ({
         id: _id,
+        status: normalizeApplicationStatus(status),
         ...rest,
       }));
 
@@ -40,4 +42,3 @@ class GetReceivedApplicationsService {
 }
 
 export default GetReceivedApplicationsService;
-

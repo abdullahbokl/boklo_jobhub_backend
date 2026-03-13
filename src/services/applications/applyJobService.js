@@ -2,6 +2,7 @@ import ApplicationModel from "../../models/applicationModel.js";
 import JobModel from "../../models/jobModel.js";
 import { ApiResponse } from "../../utils/apiResponse.js";
 import { NotFoundError, ConflictError } from "../../utils/errors.js";
+import { normalizeApplicationStatus } from "../../utils/applicationStatus.js";
 class ApplyJobService {
   static async apply(req, res, next) {
     try {
@@ -13,6 +14,7 @@ class ApplyJobService {
         jobId: req.params.id,
         applicantId: req.user.id,
         coverLetter: req.body.coverLetter || "",
+        status: normalizeApplicationStatus("applied"),
       }).save();
       return ApiResponse.created(res, { id: application._id, ...application.toObject() }, "Application submitted");
     } catch (error) {
@@ -25,7 +27,11 @@ class ApplyJobService {
         .populate("jobId", "title company location salary imageUrl")
         .sort({ createdAt: -1 })
         .lean();
-      const data = apps.map(({ _id, __v, ...rest }) => ({ id: _id, ...rest }));
+      const data = apps.map(({ _id, __v, status, ...rest }) => ({
+        id: _id,
+        status: normalizeApplicationStatus(status),
+        ...rest,
+      }));
       return ApiResponse.success(res, data);
     } catch (error) {
       next(error);

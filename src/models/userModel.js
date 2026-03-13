@@ -53,6 +53,30 @@ const UserModel = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false },
   isAgent: { type: Boolean, default: false },
   skills: { type: Array },
+  experience: {
+    type: [
+      {
+        title: { type: String, trim: true },
+        company: { type: String, trim: true },
+        startDate: { type: String, trim: true },
+        endDate: { type: String, trim: true },
+        description: { type: String, trim: true },
+      },
+    ],
+    default: [],
+  },
+  education: {
+    type: [
+      {
+        school: { type: String, trim: true },
+        degree: { type: String, trim: true },
+        fieldOfStudy: { type: String, trim: true },
+        startDate: { type: String, trim: true },
+        endDate: { type: String, trim: true },
+      },
+    ],
+    default: [],
+  },
   bio: { type: String },
   refreshToken: { type: String, default: null },
 }, {

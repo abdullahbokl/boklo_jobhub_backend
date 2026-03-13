@@ -6,12 +6,21 @@ import { sanitizeDoc } from "../../utils/sanitize.js";
 class UpdateUserService {
   static async updateUser(req, res, next) {
     try {
-      const { password, skills = [], profilePic, ...restOfBody } = req.body;
+      const {
+        password,
+        skills,
+        experience,
+        education,
+        profilePic,
+        ...restOfBody
+      } = req.body;
       if (password) {
         restOfBody.password = await EncryptionServices.encryptText(password);
       }
       const updateObject = { $set: { ...restOfBody } };
-      if (Array.isArray(skills) && skills.length > 0) updateObject.$set.skills = skills;
+      if (Array.isArray(skills)) updateObject.$set.skills = skills;
+      if (Array.isArray(experience)) updateObject.$set.experience = experience;
+      if (Array.isArray(education)) updateObject.$set.education = education;
       if (typeof profilePic === "string" && profilePic.trim()) {
         updateObject.$push = { profilePic: { url: profilePic } };
       }
