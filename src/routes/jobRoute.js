@@ -8,6 +8,7 @@ router
   .route("/")
   .post(AuthMiddleware.verifyTokenAndAgent, validate(createJobSchema), JobController.createJob)
   .get(JobController.getAllJobs);
+router.get("/my-jobs", AuthMiddleware.verifyTokenAndAgent, JobController.getMyJobs);
 router.get("/my-applications", AuthMiddleware.verifyToken, JobController.getMyApplications);
 router.get("/search/:query", JobController.searchJobs);
 router

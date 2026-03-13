@@ -50,7 +50,8 @@ const JobModel = new mongoose.Schema(
     },
     imageUrl: {
       type: String,
-      required: true,
+      required: false,
+      default: "",
       trim: true,
     },
     agentId: {
