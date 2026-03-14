@@ -2,8 +2,17 @@ import mongoose from "mongoose";
 
 function parseSalaryValue(salary) {
   if (salary == null) return 0;
-  const parsed = Number(String(salary).replace(/[^0-9.]/g, ""));
-  return Number.isFinite(parsed) ? parsed : 0;
+  const matches = String(salary)
+    .match(/\d+(?:\.\d+)?/g)
+    ?.map(Number)
+    .filter((item) => Number.isFinite(item));
+
+  if (matches == null || matches.length === 0) {
+    return 0;
+  }
+
+  matches.sort((a, b) => a - b);
+  return matches[0];
 }
 
 const JobModel = new mongoose.Schema(
@@ -79,9 +88,8 @@ const JobModel = new mongoose.Schema(
   { timestamps: true }
 );
 
-JobModel.pre("save", function syncSalaryValue(next) {
+JobModel.pre("save", function syncSalaryValue() {
   this.salaryValue = parseSalaryValue(this.salary);
-  next();
 });
 
 function syncSalaryValueOnUpdate() {
