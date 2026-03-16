@@ -14,14 +14,15 @@ import chatRoute from "./routes/chatRoute.js";
 import messagesRoute from "./routes/messagesRoute.js";
 import imagesRoute from "./routes/imagesRoute.js";
 import applicationRoute from "./routes/applicationRoute.js";
+import { corsOptions } from "./config/cors.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { requestId } from "./middleware/requestId.js";
 import { sanitizeRequest } from "./middleware/sanitizeRequest.js";
 import logger, { morganStream } from "./utils/logger.js";
 import { swaggerSpec } from "./config/swagger.js";
+import { getDatabaseStatus, isDatabaseReady } from "./config/db.js";
 
 const app = express();
-const corsOrigins = process.env.CORS_ORIGIN?.split(",").map((origin) => origin.trim()).filter(Boolean);
 
 // ─── Core middleware ─────────────────────────────────────────────────────────
 app.use(requestId);
@@ -33,7 +34,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(helmet());
-app.use(cors({ origin: corsOrigins?.length ? corsOrigins : true, credentials: true }));
+app.use(cors(corsOptions));
 
 // ─── Rate limiting ───────────────────────────────────────────────────────────
 const isDev = process.env.NODE_ENV === "development";
@@ -59,7 +60,13 @@ app.get("/", (_req, res) => {
 });
 
 app.get("/health", (_req, res) => {
-  res.status(200).json({ success: true, status: "ok" });
+  const dbStatus = getDatabaseStatus();
+
+  res.status(dbStatus.connected ? 200 : 503).json({
+    success: dbStatus.connected,
+    status: dbStatus.connected ? "ok" : "degraded",
+    database: dbStatus,
+  });
 });
 
 // ─── API Documentation ────────────────────────────────────────────────────────
@@ -69,6 +76,18 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // ─── Versioned Routes ─────────────────────────────────────────────────────────
+app.use("/api/v1", (req, res, next) => {
+  if (isDatabaseReady()) {
+    return next();
+  }
+
+  return res.status(503).json({
+    success: false,
+    message: "Database is unavailable. The server is running in degraded mode and will retry automatically.",
+    database: getDatabaseStatus(),
+  });
+});
+
 app.use("/api/v1", authRoute);
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/jobs", jobRoute);
